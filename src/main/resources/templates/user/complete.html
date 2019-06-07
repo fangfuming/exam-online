@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>complete</title>
+</head>
+<body>
+        <h3 align="center" style="margin-top: 10%;">提交成功！</h3>
+        <div align="center" style="margin-top: 30px;margin-bottom: 25px;font-size: 25px">您的分数:
+        <span th:text="${session.score}" style="font-style: italic;font-weight: bolder;"></span>
+        </div>
+        <div align="center" style="font-size: 25px">成绩等级:
+            <span th:if="${session.score}>=85" th:text="A"></span>
+            <span th:if="${session.score}>=85" th:text="优秀" styleC="color: blue"></span>
+            <span th:if="${session.score}>=75 and ${session.score}<85" th:text="B"></span>
+            <span th:if="${session.score}>=75 and ${session.score}<85" th:text="良好" style="color: blue"></span>
+            <span th:if="${session.score}>=60 and ${session.score}<75" th:text="C"></span>
+            <span th:if="${session.score}>=60 and ${session.score}<75" th:text="及格" style="color: green"></span>
+            <span th:if="${session.score}<60" th:text="D"></span>
+            <span th:if="${session.score}<60" th:text="不及格" style="color: red"></span>
+        </div>
+
+</body>
+</html>

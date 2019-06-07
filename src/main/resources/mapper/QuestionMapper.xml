@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.exam.dao.QuestionMapper">
+
+    <insert id="addQuestion" parameterType="question">
+        insert into question values (#{questionId},#{detail},#{optionA},#{optionB},
+                                      #{optionC},#{optionD},#{correctAnswer})
+    </insert>
+
+    <select id="getList" resultType="question">
+        select * from question
+    </select>
+
+    <select id="getQuestionIds" resultType="String">
+        select questionId from question
+    </select>
+
+    <select id="getOne" parameterType="String" resultType="question" >
+        select * from question where questionId = #{questionId}
+    </select>
+
+
+
+    <delete id="delQuestion" parameterType="String">
+        delete  from question where questionId = #{questionId}
+    </delete>
+
+    <delete id="delAllQuestion" parameterType="int[]">
+        delete  from question where questionId in
+        <foreach collection="array" item="arr" open="(" separator="," close=")">
+            #{arr}
+        </foreach>
+    </delete>
+
+    <select id="getRandQuestions" parameterType="int[]" resultType="question">
+        select * from question where questionId in
+        <foreach collection="array" item="arr" open="(" separator="," close=")">
+            #{arr}
+        </foreach>
+    </select>
+
+    <update id="updQuestion" parameterType="Map" >
+        update question set
+        detail = #{question.detail},
+        optionA = #{question.optionA},
+        optionB = #{question.optionB},
+        optionC = #{question.optionC},
+        optionD = #{question.optionD},
+        correctAnswer = #{question.correctAnswer}
+        where questionId = #{questionId}
+    </update>
+
+
+
+
+</mapper>

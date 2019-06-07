@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.exam.dao.ScoreMapper">
+
+    <insert id="addScore" parameterType="score">
+        insert into score values(#{username},#{score},#{grade})
+    </insert>
+
+    <select id="getScoreList" resultType="score">
+        select * from score
+    </select>
+
+    <select id="getScore" parameterType="String" resultType="score">
+        select * from score where username = #{username}
+    </select>
+
+    <delete id="deleteScore" parameterType="String" >
+        delete from score where username = #{username}
+    </delete>
+
+
+    <select id="getCount" resultType="int">
+        select count(grade) from score
+    </select>
+    <select id="getCountA" resultType="int">
+        select count(grade) from score where grade = "A"
+    </select>
+    <select id="getCountB" resultType="int">
+        select count(grade) from score where grade = "B"
+    </select>
+    <select id="getCountC" resultType="int">
+        select count(grade) from score where grade = "C"
+    </select>
+    <select id="getCountD" resultType="int">
+        select count(grade) from score where grade = "D"
+    </select>
+
+
+
+
+
+
+</mapper>

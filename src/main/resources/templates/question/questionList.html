@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>试题列表</title>
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+    <style>
+        th {
+            height: 40px;
+            text-align: center;
+            vertical-align: center;
+            font-size: 20px;
+        }
+
+        td {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            vertical-align: center;
+        }
+
+        input {
+            width: 30px;
+            height: 40px;
+            border: 0px;
+        }
+
+        table {
+            width: 1000px;
+            border-collapse: collapse;
+            margin-top: 60px;
+            margin-left: 150px;
+        }
+    </style>
+    <script type="text/javascript">
+
+        var $upd_question
+        $(function () {
+
+            /**
+             * 增加试题
+             */
+            $("#question_add_modal").click(function () {
+                $("#questionAddModal form")[0].reset() ;
+
+                $("#questionAddModal").modal({
+                    backdrop: "static"
+                });
+            });
+
+            $("#add_question_btn").click(function () {
+                if ($("#add_detail").val() != "" &&
+                    $("#add_optionA").val() != "" &&
+                    $("#add_optionB").val() != "" &&
+                    $("#add_optionC").val() != "" &&
+                    $("#add_optionD").val() != "" &&
+                    $("#add_answer").val() != ""
+                ) {
+                    $.ajax({
+                        type:"POST",
+                        url:"/admin/addQuestion",
+                        data:$("#questionAddModal form").serialize(),
+                        success: function (result) {
+                            $("#questionAddModal").modal('hide');
+                            var $totalPages = $("#totalPages").html()
+                            var $totalRecord = $("#totalRecord").html()
+                            if(parseInt($totalRecord) % 4 == 0){
+                                $totalPages = parseInt($totalPages) + 1
+                            }
+                            location.href = "/admin/getQuestionList?pn=" + $totalPages
+                        }
+                    })
+
+                }else {
+                    alert("请将试题信息填写完整！")
+                    return false;
+                }
+            })
+
+            /**
+             *  删除试题--单个
+             */
+
+            $(".del_btn").click(function () {
+                var $del_question = $(this).parents("tr").children(":eq(1)").html();
+               if(window.confirm("确认删除" + $del_question + "号试题?")){
+                    $.ajax({
+                        type:"delete",
+                        url:"/admin/delQuestion/" + $del_question,
+                        success:function () {
+                            var $pageNum =$("#pageNum").html()
+                            location.href = "/admin/getQuestionList?pn=" + $pageNum
+                        }
+
+                    })
+                }
+            })
+
+            /**
+             *  删除试题--批量
+             */
+            //1.全选全不选
+            $("#check_all").click(function () {
+                $(".check_item").prop("checked",$(this).prop("checked"))
+            })
+
+            //2.反选
+            $(".check_item").click(function () {
+                //判断当前选择的元素是不是5个
+                var flag = $(".check_item:checked").length==$(".check_item").length;
+                $("#check_all").prop("checked",flag);
+            })
+
+            //给批量删除按钮绑定单击事件
+            $("#question_deleteall_btn").click(function () {
+                var questionIds = "" ;
+
+                $.each($(".check_item:checked"),function () {
+                    questionIds += $(this).parents("tr").children(":eq(1)").html()+","
+                })
+                questionIds = questionIds.substring(0,questionIds.length-1)
+                if(confirm("确认删除"+questionIds+"号试题？")){
+                    $.ajax({
+                        type:"DELETE",
+                        url:"/admin/delAllQuestion",
+                        data:{"questionIds":questionIds},
+                        success:function (result) {
+                            var $pageNum = $("#pageNum").html()
+                            location.href = "/admin/getQuestionList?pn=" + $pageNum
+                        }
+                    })
+                }
+            })
+
+
+
+            /**
+             * 修改试题
+             */
+
+            $(".upd_btn").click(function () {
+                $upd_question = $(this).parents("tr").children(":eq(1)").html();
+                //修改前先查询，信息回显
+                $.ajax({
+                    type:"GET",
+                    url:"/admin/getQuestion",
+                    data:{"questionId":$upd_question},
+                    success:function (result) {
+                        $("#upd_detail").val(result.detail)
+                        $("#upd_optionA").val(result.optionA)
+                        $("#upd_optionB").val(result.optionB)
+                        $("#upd_optionC").val(result.optionC)
+                        $("#upd_optionD").val(result.optionD)
+                        $("#upd_answer").val(result.correctAnswer)
+                    }
+                })
+                $("#questionUpdModal").modal({
+                    backdrop: "static"
+                });
+            })
+
+            //确认修改按钮绑定点击事件
+            $("#question_update_btn").click(function () {
+                if ($("#upd_detail").val() != "" &&
+                    $("#upd_optionA").val() != "" &&
+                    $("#upd_optionB").val() != "" &&
+                    $("#upd_optionC").val() != "" &&
+                    $("#upd_optionD").val() != "" &&
+                    $("#upd_answer").val() != ""
+                ) {
+                    $.ajax({
+                        type:"PUT",
+                        url:"/admin/updQuestion/" + $upd_question,
+                        data:$("#questionUpdModal form").serialize(),
+                        success: function (result) {
+                            $("#questionUpdModal").modal('hide');
+                            var $pageNum = $("#pageNum").html()
+                            location.href = "/admin/getQuestionList?pn=" + $pageNum
+                        }
+                    })
+
+                }else {
+                    alert("请将试题信息填写完整！")
+                    return false;
+                }
+            })
+
+        })
+
+    </script>
+</head>
+<body>
+<h1 align="center" style="color: firebrick">试题管理界面</h1>
+
+<div style="position: absolute;top:70px;right: 180px">
+    <button class="btn btn-primary" id="question_add_modal">新增</button>
+    <button class="btn btn-danger" id="question_deleteall_btn">批量删除</button>
+</div>
+
+
+<table align="center" border="1px solid black">
+    <tr>
+        <th><input type="checkbox" id="check_all"></th>
+        <th th:text="题号"></th>
+        <th th:text="试题题干"></th>
+        <th th:text="选项A"></th>
+        <th th:text="选项B"></th>
+        <th th:text="选项C"></th>
+        <th th:text="选项D"></th>
+        <th th:text="答案"></th>
+        <th th:text="操作"></th>
+    </tr>
+
+    <tr th:each="question:${pageInfo.list}">
+        <td><input type="checkbox" class="check_item"></td>
+        <td th:text="${question.questionId}">
+        </td>
+        <td th:text="${question.detail}">
+        </td>
+        <td th:text="${question.optionA}">
+        </td>
+        <td th:text="${question.optionB}">
+        </td>
+        <td th:text="${question.optionC}">
+        </td>
+        <td th:text="${question.optionD}">
+        </td>
+        <td th:text="${question.correctAnswer}">
+        </td>
+        <td>
+            <button class="btn btn-primary upd_btn">修改</button>
+            <button class="btn btn-danger del_btn">删除</button>
+        </td>
+    </tr>
+</table>
+
+
+<!-- 试题添加的模态框 -->
+<div class="modal fade" id="questionAddModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">添加试题</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">题目</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="detail" class="form-control" id="add_detail">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项A</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionA" class="form-control" id="add_optionA">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项B</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionB" class="form-control" id="add_optionB">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项C</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionC" class="form-control" id="add_optionC">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项D</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionD" class="form-control" id="add_optionD">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">正确选项</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" name="correctAnswer" id="add_answer">
+                                <option selected="selected" value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="add_question_btn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 试题修改的模态框 -->
+<div class="modal fade" id="questionUpdModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">试题修改</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">题目</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="detail" class="form-control" id="upd_detail">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项A</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionA" class="form-control" id="upd_optionA">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项B</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionB" class="form-control" id="upd_optionB">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项C</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionC" class="form-control" id="upd_optionC">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">选项D</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="optionD" class="form-control" id="upd_optionD">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">正确选项</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" name="correctAnswer" id="upd_answer">
+                                <option selected="selected" value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="question_update_btn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 显示分页信息 -->
+<div class="row" style="font-size: 20px;margin-top: 30px">
+    <!-- 显示分页文字信息 -->
+    <div style="float: left;margin-left: 120px">
+        当前第<span th:text="${pageInfo.pageNum}" id="pageNum"></span>页,总<span th:text="${pageInfo.pages}" id="totalPages"></span>页,总<span
+            th:text="${pageInfo.total}" id="totalRecord" ></span>条记录 <span th:text="${pageInfo.size}" id="size" style="display: none"></span>
+    </div>
+    <!-- 分页条信息 -->
+    <div style="float: right;margin-right: 120px">
+
+        <nav aria-label="Page navigation">
+            <a href="/admin/getQuestionList?pn=1" style="margin-right: 10px">首页</a>
+            <a style="margin-right: 10px" th:if="${ pageInfo.hasPreviousPage}"
+               th:href="@{/admin/getQuestionList(pn=${pageInfo.pageNum-1 })}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+
+            <span th:each="page_Num :${pageInfo.navigatepageNums }">
+                <a href="#" th:text="${page_Num }" th:if="${page_Num==pageInfo.pageNum }"
+                   style="margin-right: 10px;color:crimson;font-weight: bold;font-style: italic"></a>
+                <a th:if="${page_Num!=pageInfo.pageNum }" th:href="@{/admin/getQuestionList(pn=${page_Num })}"
+                   th:text="${page_Num }" style="margin-right: 10px"></a>
+        </span>
+
+
+            <a th:if="${ pageInfo.hasNextPage}" href="www.baidu.com"
+               th:href="@{/admin/getQuestionList(pn=${pageInfo.pageNum+1 })}" aria-label="Next"
+               style="margin-right: 10px">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+
+            <a th:href="@{/admin/getQuestionList(pn=${pageInfo.pages})}">尾页</a>
+        </nav>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+    <style>
+        h1{
+            color: firebrick
+        }
+        th{
+            text-align: center;
+            height: 60px;
+            font-size: 20px;
+        }
+        td{
+            vertical-align: center;
+            height: 50px;
+            width: 60px;
+        }
+        table {
+            width: 500px;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        #score,#grade{
+            font-size: 18px;
+            color: crimson;
+            font-weight: bolder;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $(".del_btn").click(function () {
+                var $username = $(this).parents("tr").children(":eq(0)").html()
+                var $pageNum = $("#pageNum").html()
+                $.ajax({
+                    type:"DELETE",
+                    url:"/admin/delScore",
+                    data:{"username":$username},
+                    success:function () {
+                        location.href = "/admin/getScoreList?pn="+$pageNum
+                    }
+                })
+            })
+            
+            $("#selByName").click(function () {
+                var $username = $("#selName").val()
+                $.ajax({
+                    type:"GET",
+                    url:"/admin/getScoreByName",
+                    data:{"username":$username},
+                    success:function (data) {
+                        console.log(data)
+                        if(data== null|| "" == data){
+                            $("#score").html("暂无该学生成绩")
+                            $("#grade").html('')
+                        }else{
+                            $("#score").html("成绩："+data.score)
+                            $("#grade").html("等级："+data.grade)
+                        }
+
+                    }
+                })
+            })
+        })
+    </script>
+</head>
+<body>
+
+<h1 align="center">成绩分析与管理</h1>
+<div style="margin-top: 50px">
+<table border="1px solid black" align="center"  style="float: left;width: 380px;margin-left: 45px">
+    <tr >
+        <th></th>
+        <th style="font-size: 14px">A(优秀)</th>
+        <th style="font-size: 14px">B(良好)</th>
+        <th style="font-size: 14px">C(及格)</th>
+        <th style="font-size: 14px">D(不及格)</th>
+        <th style="font-size: 14px">总人数</th>
+    </tr>
+    <tr>
+        <td>人数</td>
+        <td th:text="${arr[1]}"></td>
+        <td th:text="${arr[2]}"></td>
+        <td th:text="${arr[3]}"></td>
+        <td th:text="${arr[4]}"></td>
+        <td th:text="${arr[0]}"></td>
+    </tr>
+    <tr>
+        <td>占比</td>
+        <td th:text="${arr[1]*100/arr[0]}+'%'"></td>
+        <td th:text="${arr[2]*100/arr[0]}+'%'"></td>
+        <td th:text="${arr[3]*100/arr[0]}+'%'"></td>
+        <td th:text="${arr[4]*100/arr[0]}+'%'"></td>
+        <td>100%</td>
+    </tr>
+
+</table>
+
+<table align="center" border="1px solid black" style="float: left;margin-left: 50px">
+    <tr>
+        <th>用户名</th>
+        <th>成绩</th>
+        <th>等级</th>
+        <th>操作</th>
+    </tr>
+    <tr th:each="score:${pageInfo.list}">
+        <td th:text="${score.username}"></td>
+        <td th:text="${score.score}"></td>
+        <td th:text="${score.grade}"></td>
+        <td>
+            <button class="btn btn-danger del_btn">删除</button>
+        </td>
+    </tr>
+</table>
+    <div style="float: left;margin-left: 50px" border="1px solid black">
+        <input placeholder="输入用户名" id="selName">
+        <button class="btn btn-primary" id="selByName">查询成绩</button><br/><br/>
+        <span id="score"></span><br/><br/>
+        <span id="grade"></span>
+    </div>
+</div>
+
+<!-- 显示分页信息 -->
+<div class="row" style="font-size: 20px;">
+    <!-- 显示分页文字信息 -->
+    <div style="position: absolute;top:520px;left: 130px">
+        当前第<span th:text="${pageInfo.pageNum}" id="pageNum"></span>页,总<span th:text="${pageInfo.pages}" id="totalPages"></span>页,总<span
+            th:text="${pageInfo.total}" id="totalRecord" ></span>条记录 <span th:text="${pageInfo.size}" id="size" style="display: none"></span>
+    </div>
+    <!-- 分页条信息 -->
+    <div style="position: absolute;top:520px;right: 130px">
+        <nav aria-label="Page navigation">
+            <a href="/admin/getScoreList?pn=1" style="margin-right: 10px">首页</a>
+            <a style="margin-right: 10px" th:if="${ pageInfo.hasPreviousPage}"
+               th:href="@{/admin/getScoreList(pn=${pageInfo.pageNum-1 })}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+            <span th:each="page_Num :${pageInfo.navigatepageNums }">
+                <a href="#" th:text="${page_Num }" th:if="${page_Num==pageInfo.pageNum }"
+                   style="margin-right: 10px;color:crimson;font-weight: bold;font-style: italic"></a>
+                <a th:if="${page_Num!=pageInfo.pageNum }" th:href="@{/admin/getScoreList(pn=${page_Num })}"
+                   th:text="${page_Num }" style="margin-right: 10px"></a>
+        </span>
+            <a th:if="${ pageInfo.hasNextPage}"
+               th:href="@{/admin/getScoreList(pn=${pageInfo.pageNum+1 })}" aria-label="Next"
+               style="margin-right: 10px">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+            <a th:href="@{/admin/getScoreList(pn=${pageInfo.pages})}">尾页</a>
+        </nav>
+    </div>
+</div>
+</body>
+</html>

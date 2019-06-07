@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" />
+    <title>管理员界面</title>
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+    <style type="text/css">
+        body {
+            background-image: url('/images/admin.jpg');
+        }
+        div{
+            margin-top: 150px;
+        }
+        button{
+            margin-right: 50px;
+        }
+    </style>
+
+</head>
+<body>
+       <div align="center">
+        <button class="btn-primary btn" onclick="location.href='/admin/getUserList'">用户管理</button>
+        <button class="btn-primary btn" onclick="location.href='/admin/getQuestionList'">试题管理</button>
+        <button class="btn-primary btn" onclick="location.href='/admin/getScoreList'">成绩分析</button>
+       </div>
+</body>
+</html>

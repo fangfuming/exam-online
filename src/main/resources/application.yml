@@ -1,0 +1,21 @@
+spring:
+  thymeleaf:
+    cache: false
+    encoding: utf-8
+
+  datasource:
+    druid:
+      url: jdbc:mysql://47.101.200.213:3306/exam-online?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: root
+      password: 123456
+      initial-size: 1
+      min-idle: 1
+      max-active: 20
+      test-on-borrow: true
+      # MySQL 8.x: com.mysql.cj.jdbc.Driver
+      driver-class-name: com.mysql.jdbc.Driver
+mybatis:
+  type-aliases-package: com.exam.entity
+  mapper-locations: classpath:/mapper/*.xml
+server:
+  port: 80

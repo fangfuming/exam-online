@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+    <style type="text/css">
+        /*body {*/
+            /*background-color: papayawhip*/
+        /*}*/
+
+        div {
+            margin-bottom: 20px;
+        }
+        li{
+            list-style: none;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+    <script type="text/javascript">
+        //当前试题序号 1-20
+        var number
+        //成绩数组
+        var score=new Array()
+        //考生答题选项数组
+        var option = new Array()
+        $(function () {
+            var answer ,pages
+            $.ajax({
+                type: "GET",
+                url: "/user/getQuestions",
+                success: function (data) {
+                    $("#detail").html(data.pageNum + "." + data.list[0].detail)
+                    $("#optionA").html('<input type="radio" name="option" value="A" style="float: left">'+'  '+'<xmp>'+data.list[0].optionA+'</xmp>')
+                    $("#optionB").html('<input type="radio" name="option" value="B" style="float: left">'+'  '+'<xmp>'+data.list[0].optionB+'</xmp>')
+                    $("#optionC").html('<input type="radio" name="option" value="C" style="float: left">'+'  '+'<xmp>'+data.list[0].optionC+'</xmp>')
+                    $("#optionD").html('<input type="radio" name="option" value="D" style="float: left">'+'  '+'<xmp>'+data.list[0].optionD+'</xmp>')
+                    number = data.pageNum
+                    answer = data.list[0].correctAnswer
+                    pages = data.pages
+                    $("#submit").hide()
+                }
+            })
+
+
+            $("#next-btn").click(function () {
+                //进行下一试题前给定当前试题得分
+                option[number] = $("input[name='option']:checked").val()
+                if(answer==$("input[name='option']:checked").val()){
+                    score[number] = 5
+                }else {
+                    score[number] = 0
+                }
+
+                $.ajax({
+                    type: "GET",
+                    url: "/user/getQuestions?pn=" + (number + 1),
+                    success: function (data) {
+                        $("#detail").html(data.pageNum + "." + data.list[0].detail)
+                        $("#optionA").html('<input type="radio" name="option" value="A" style="float: left">'+'  '+'<xmp>'+data.list[0].optionA+'</xmp>')
+                        $("#optionB").html('<input type="radio" name="option" value="B" style="float: left">'+'  '+'<xmp>'+data.list[0].optionB+'</xmp>')
+                        $("#optionC").html('<input type="radio" name="option" value="C" style="float: left">'+'  '+'<xmp>'+data.list[0].optionC+'</xmp>')
+                        $("#optionD").html('<input type="radio" name="option" value="D" style="float: left">'+'  '+'<xmp>'+data.list[0].optionD+'</xmp>')
+                        number = data.pageNum
+                        answer = data.list[0].correctAnswer
+                        pages = data.pages
+                        $("input[value='"+option[number]+"']").prop("checked",true)
+                        if(number == pages){
+                           $("#submit").show()
+                        }
+                    }
+                })
+
+
+            })
+
+            $("#pre-btn").click(function () {
+                if(number == 1){
+                    return false
+                }
+                option[number] = $("input[name='option']:checked").val()
+                $.ajax({
+                    type: "GET",
+                    url: "/user/getQuestions?pn=" + (number - 1),
+                    success: function (data) {
+                        $("#detail").html(data.pageNum + "." + data.list[0].detail)
+                        $("#optionA").html('<input type="radio" name="option" value="A" style="float: left">'+'  '+'<xmp>'+data.list[0].optionA+'</xmp>')
+                        $("#optionB").html('<input type="radio" name="option" value="B" style="float: left">'+'  '+'<xmp>'+data.list[0].optionB+'</xmp>')
+                        $("#optionC").html('<input type="radio" name="option" value="C" style="float: left">'+'  '+'<xmp>'+data.list[0].optionC+'</xmp>')
+                        $("#optionD").html('<input type="radio" name="option" value="D" style="float: left">'+'  '+'<xmp>'+data.list[0].optionD+'</xmp>')
+
+
+                        number = data.pageNum
+                        answer = data.list[0].correctAnswer
+                        pages = data.pages
+                        $("#submit").hide()
+                        $("input[value='"+option[number]+"']").prop("checked",true)
+                    }
+                })
+            })
+
+            $("#sub_btn").click(function () {
+                option[number] = $("input[name='option']:checked").val()
+                if(window.confirm("确认提交么？")){
+                    var sum = 0
+                    if(answer==$("input[name='option']:checked").val()){
+                        score[number] = 5
+                    }else {
+                        score[number] = 0
+                    }
+                    //计算出总得分
+                    for ( var i=1;i<score.length;i++) {
+                        sum = sum + parseInt(score[i])
+                    }
+
+                    location.href="/user/submit?score="+sum
+                }
+            })
+
+        })
+
+
+    </script>
+</head>
+<body>
+
+<!--<div>-->
+<div id="btn" align="right" style="margin-top: 50px;margin-right: 400px">
+    <button class="btn btn-primary" id="pre-btn">上一题</button>
+    <button class="btn btn-primary" id="next-btn">下一题</button>
+</div>
+<div style="font-size: 20px;margin-left: 15%">
+    <div id="detail" style="width: 500px;font-weight: bolder"></div>
+    <div id="options">
+            <li id="optionA" ></li>
+            <li id="optionB"></li>
+            <li id="optionC"></li>
+            <li id="optionD"></li>
+    </div>
+</div>
+<div id="submit"style="margin-left: 60%">
+    <button id="sub_btn" class="btn btn-danger" style="margin-top: 20px">提交</button>
+</div>
+</body>
+</html>
